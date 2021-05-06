@@ -1,0 +1,3 @@
+include ':ooftf-maven'
+include ':app'
+rootProject.name = "ooftf-maven"
