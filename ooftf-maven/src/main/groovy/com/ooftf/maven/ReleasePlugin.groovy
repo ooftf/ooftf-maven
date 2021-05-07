@@ -1,19 +1,23 @@
 package com.ooftf.maven
 
-import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.bundling.Jar
 
 class ReleasePlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        boolean isAndroid = project.plugins.hasPlugin('com.android.library')
         PublishExtension extension = project.extensions.create('publish', PublishExtension)
         project.apply([plugin: 'maven-publish'])
-        project.task('generateSourcesJar',type: Jar){
-            from project.android.sourceSets.main.java.srcDirs
-            classifier 'sources'
+        project.task('generateSourcesJar', type: Jar) {
+            if(isAndroid){
+                from project.android.sourceSets.main.java.srcDirs
+                classifier 'sources'
+            }
+
         }
         project.afterEvaluate {
             extension.initDefault(project)
@@ -21,30 +25,28 @@ class ReleasePlugin implements Plugin<Project> {
             project.publishing {
                 publications {
                     release(MavenPublication) {
-                        from project.components.release
+                        if (isAndroid) {
+                            from project.components.release
+                        } else {
+                            from project.components.find()
+                        }
                         groupId = extension.groupId
                         artifactId = extension.artifactId
                         version = extension.version
-                        artifact project.tasks.generateSourcesJar
+                        if (isAndroid) {
+                            artifact project.tasks.generateSourcesJar
+                        }
                     }
                 }
                 repositories {
                     maven {
-                        name = 'snapshotRepository'
-                        url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        url = extension.url
                         credentials {
                             username = extension.username
                             password = extension.password
                         }
                     }
-                    maven {
-                        name = 'repository'
-                        url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                        credentials {
-                            username = extension.username
-                            password = extension.password
-                        }
-                    }
+
                 }
             }
         }

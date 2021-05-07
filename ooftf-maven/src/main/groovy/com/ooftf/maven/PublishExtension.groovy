@@ -21,6 +21,7 @@ class PublishExtension {
     String version
     String username
     String password
+    String url
 
 
     /**
@@ -76,6 +77,13 @@ class PublishExtension {
             artifactId = project.name
         }
 
+        if(url == null||url.empty){
+            if(version.endsWith("SNAPSHOT")){
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            }else{
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+        }
     }
 
 }

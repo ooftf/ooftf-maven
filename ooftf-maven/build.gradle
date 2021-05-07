@@ -1,29 +1,7 @@
 apply plugin: 'groovy'
-
-apply plugin: 'maven-publish'
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                //artifact sourceJar
-                from components.find()
-                groupId = 'com.github.ooftf'
-                artifactId = project.name
-                version = '1.0.0'
-            }
-        }
-        repositories {
-            maven {
-                // release  https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
-                name = 'repository'
-                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                credentials {
-                    username = "ooftf"
-                    password = "****"
-                }
-            }
-        }
-    }
+apply plugin: 'ooftf-maven'
+publish{
+    version = '1.0.0'
 }
 dependencies {
     implementation gradleApi()
