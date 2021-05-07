@@ -22,7 +22,9 @@ class PublishExtension {
     String username
     String password
     String url
-
+    String signingKeyId
+    String signingPassword
+    String signingSecretKeyRingFile
 
     /**
      * Validate all mandatory properties for this extension.
@@ -58,9 +60,26 @@ class PublishExtension {
         Properties properties = new Properties()
         InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream();
         properties.load(inputStream)
-        def user = properties.getProperty('mavenUsername')
-        def key = properties.getProperty('mavenPassword')
-
+        def user = properties.getProperty('maven.username')
+        def key = properties.getProperty('maven.password')
+        def keyId = properties.getProperty('signing.keyId')
+        def sPassword = properties.getProperty('signing.password')
+        def file = properties.getProperty('signing.file')
+        if (keyId == null || keyId.empty) {
+            keyId = '2A4D54DC'
+        }
+        if (file == null || file.empty) {
+            file = 'C:\\Users\\signing.gpg'
+        }
+        if (signingKeyId == null || signingKeyId.empty) {
+            signingKeyId = keyId
+        }
+        if (signingSecretKeyRingFile == null || signingSecretKeyRingFile.empty) {
+            signingSecretKeyRingFile = file
+        }
+        if (signingPassword == null || signingPassword.empty) {
+            signingPassword = sPassword
+        }
         if (user == null || user.empty) {
             user = 'ooftf'
         }
@@ -77,10 +96,10 @@ class PublishExtension {
             artifactId = project.name
         }
 
-        if(url == null||url.empty){
-            if(version.endsWith("SNAPSHOT")){
+        if (url == null || url.empty) {
+            if (version.endsWith("SNAPSHOT")) {
                 url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            }else{
+            } else {
                 url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             }
         }

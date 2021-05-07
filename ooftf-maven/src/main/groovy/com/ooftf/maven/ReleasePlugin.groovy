@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
+
 class ReleasePlugin implements Plugin<Project> {
 
     @Override
@@ -14,6 +15,7 @@ class ReleasePlugin implements Plugin<Project> {
         boolean isGroovy = project.plugins.hasPlugin('groovy')
         PublishExtension extension = project.extensions.create('publish', PublishExtension)
         project.apply([plugin: 'maven-publish'])
+        project.apply([plugin: 'signing'])
         project.task('generateSourcesJar', type: Jar) {
             if (isAndroid) {
                 from project.android.sourceSets.main.java.srcDirs
@@ -28,7 +30,7 @@ class ReleasePlugin implements Plugin<Project> {
                 classifier "sources"
             }
         }
-        project.task('javadocJar',type: Jar) {
+        project.task('javadocJar', type: Jar) {
             from project.tasks.javadoc
             archiveClassifier = 'javadoc'
         }
@@ -42,6 +44,9 @@ class ReleasePlugin implements Plugin<Project> {
         project.afterEvaluate {
             extension.initDefault(project)
             extension.validate()
+            project.ext["signing.keyId"] = extension.signingKeyId
+            project.ext["signing.password"] = extension.signingPassword
+            project.ext["signing.secretKeyRingFile"] = extension.signingSecretKeyRingFile
             project.publishing {
                 publications {
                     release(MavenPublication) {
@@ -55,7 +60,7 @@ class ReleasePlugin implements Plugin<Project> {
                         groupId = extension.groupId
                         artifactId = extension.artifactId
                         version = extension.version
-                        if (isAndroid||isJava||isGroovy) {
+                        if (isAndroid || isJava || isGroovy) {
                             artifact project.tasks.generateSourcesJar
                         }
                         artifact project.tasks.javadocJar
@@ -94,6 +99,11 @@ class ReleasePlugin implements Plugin<Project> {
                         }
                     }
 
+                }
+            }
+            if (!extension.version.endsWith("SNAPSHOT")) {
+                project.signing {
+                    sign project.publishing.publications
                 }
             }
         }

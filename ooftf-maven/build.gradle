@@ -19,7 +19,7 @@ afterEvaluate {
                 from components.find()
                 groupId = 'com.github.ooftf'
                 artifactId = project.name
-                version = '1.1.5-SNAPSHOT'
+                version = '1.1.8-SNAPSHOT'
             }
         }
         repositories {
@@ -27,7 +27,7 @@ afterEvaluate {
                 url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 credentials {
                     username = "ooftf"
-                    password = "Lh.8172505078"
+                    password = "******"
                 }
             }
         }
