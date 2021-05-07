@@ -4,21 +4,41 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
-
+import org.gradle.api.tasks.javadoc.Javadoc
 class ReleasePlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
         boolean isAndroid = project.plugins.hasPlugin('com.android.library')
+        boolean isJava = project.plugins.hasPlugin('java')
+        boolean isGroovy = project.plugins.hasPlugin('groovy')
         PublishExtension extension = project.extensions.create('publish', PublishExtension)
         project.apply([plugin: 'maven-publish'])
         project.task('generateSourcesJar', type: Jar) {
-            if(isAndroid){
+            if (isAndroid) {
                 from project.android.sourceSets.main.java.srcDirs
                 classifier 'sources'
             }
-
+            if (isJava) {
+                from project.sourceSets.main.allJava
+                classifier "sources"
+            }
+            if (isGroovy) {
+                from project.sourceSets.main.allGroovy
+                classifier "sources"
+            }
         }
+        project.task('javadocJar',type: Jar) {
+            from project.tasks.javadoc
+            archiveClassifier = 'javadoc'
+        }
+        project.tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+            options.addStringOption('encoding', 'UTF-8')
+            options.addStringOption('charSet', 'UTF-8')
+        }
+
+
         project.afterEvaluate {
             extension.initDefault(project)
             extension.validate()
@@ -27,17 +47,44 @@ class ReleasePlugin implements Plugin<Project> {
                     release(MavenPublication) {
                         if (isAndroid) {
                             from project.components.release
-                        } else {
-                            from project.components.find()
+                        } else if (isJava) {
+                            from project.components.java
+                        } else if (isGroovy) {
+                            from project.components.groovy
                         }
                         groupId = extension.groupId
                         artifactId = extension.artifactId
                         version = extension.version
-                        if (isAndroid) {
+                        if (isAndroid||isJava||isGroovy) {
                             artifact project.tasks.generateSourcesJar
+                        }
+                        artifact project.tasks.javadocJar
+                        pom {
+                            name = extension.artifactId
+                            description = "noting to description"
+                            url = "http://github.com/${extension.username}/${extension.artifactId}"
+                            licenses {
+                                license {
+                                    name = "The Apache License, Version 2.0"
+                                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                                }
+                            }
+                            developers {
+                                developer {
+                                    id = "ooftf"
+                                    name = "ooftf"
+                                    email = "994749769@qq.com"
+                                }
+                            }
+                            scm {
+                                connection = "scm:svn:http://github.com/${extension.username}"
+                                developerConnection = "scm:svn:https://github.com/${extension.username}"
+                                url = "http://github.com/${extension.username}"
+                            }
                         }
                     }
                 }
+
                 repositories {
                     maven {
                         url = extension.url
