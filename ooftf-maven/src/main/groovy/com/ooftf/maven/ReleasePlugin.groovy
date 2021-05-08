@@ -44,7 +44,10 @@ class ReleasePlugin implements Plugin<Project> {
                 if (JavaVersion.current().isJava8Compatible()) {
                     project.allprojects {
                         project.tasks.withType(Javadoc) {
+                            enabled = false
                             options.addStringOption('Xdoclint:none', '-quiet')
+                            options.setCharSet('UTF-8')
+                            options.setEncoding("UTF-8")
                         }
                     }
                 }

@@ -5,7 +5,7 @@
 ## 使用
 project.gradle
 ```groovy
- classpath "com.github.ooftf:ooftf-maven:1.0.2"
+ classpath "com.github.ooftf:ooftf-maven:1.0.3"
 ```
 library.gradle
 ```groovy
