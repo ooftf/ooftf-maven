@@ -1,5 +1,5 @@
 # ooftf-maven
-![Maven Central](https://img.shields.io/maven-central/v/com.github.ooftf/ooftf-maven)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.ooftf/ooftf-maven/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.ooftf/ooftf-maven)
 ## 描述
 简化上传到mavenCentral的配置
 ## 使用
