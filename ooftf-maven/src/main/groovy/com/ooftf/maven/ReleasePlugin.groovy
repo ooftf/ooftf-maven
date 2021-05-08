@@ -1,5 +1,6 @@
 package com.ooftf.maven
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
@@ -30,10 +31,31 @@ class ReleasePlugin implements Plugin<Project> {
                 classifier "sources"
             }
         }
-        project.task('javadocJar', type: Jar) {
-            from project.tasks.javadoc
-            archiveClassifier = 'javadoc'
+        if (isGroovy || isJava) {
+            project.task('javadocJar', type: Jar) {
+                from project.tasks.javadoc
+                archiveClassifier = 'javadoc'
+            }
+        } else if (isAndroid) {
+            project.task('androidJavadocs', type: Javadoc) {
+                source = project.android.sourceSets.main.java.srcDirs
+                failOnError = false
+                classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+
+                if (JavaVersion.current().isJava8Compatible()) {
+                    project.allprojects {
+                        project.tasks.withType(Javadoc) {
+                            options.addStringOption('Xdoclint:none', '-quiet')
+                        }
+                    }
+                }
+            }
+            project.task('javadocJar', type: Jar, dependsOn: project.tasks.androidJavadocs) {
+                from project.tasks.androidJavadocs.destinationDir
+                archiveClassifier = 'javadoc'
+            }
         }
+
         project.tasks.withType(Javadoc) {
             options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('encoding', 'UTF-8')
@@ -44,6 +66,7 @@ class ReleasePlugin implements Plugin<Project> {
         project.afterEvaluate {
             extension.initDefault(project)
             extension.validate()
+            boolean isRelease = !extension.version.endsWith("SNAPSHOT")
             project.ext["signing.keyId"] = extension.signingKeyId
             project.ext["signing.password"] = extension.signingPassword
             project.ext["signing.secretKeyRingFile"] = extension.signingSecretKeyRingFile
@@ -63,28 +86,30 @@ class ReleasePlugin implements Plugin<Project> {
                         if (isAndroid || isJava || isGroovy) {
                             artifact project.tasks.generateSourcesJar
                         }
-                        artifact project.tasks.javadocJar
-                        pom {
-                            name = extension.artifactId
-                            description = "noting to description"
-                            url = "http://github.com/${extension.username}/${extension.artifactId}"
-                            licenses {
-                                license {
-                                    name = "The Apache License, Version 2.0"
-                                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        if (isRelease) {
+                            artifact project.tasks.javadocJar
+                            pom {
+                                name = extension.artifactId
+                                description = "noting to description"
+                                url = "http://github.com/${extension.username}/${extension.artifactId}"
+                                licenses {
+                                    license {
+                                        name = "The Apache License, Version 2.0"
+                                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                                    }
                                 }
-                            }
-                            developers {
-                                developer {
-                                    id = "ooftf"
-                                    name = "ooftf"
-                                    email = "994749769@qq.com"
+                                developers {
+                                    developer {
+                                        id = "ooftf"
+                                        name = "ooftf"
+                                        email = "994749769@qq.com"
+                                    }
                                 }
-                            }
-                            scm {
-                                connection = "scm:svn:http://github.com/${extension.username}"
-                                developerConnection = "scm:svn:https://github.com/${extension.username}"
-                                url = "http://github.com/${extension.username}"
+                                scm {
+                                    connection = "scm:svn:http://github.com/${extension.username}"
+                                    developerConnection = "scm:svn:https://github.com/${extension.username}"
+                                    url = "http://github.com/${extension.username}"
+                                }
                             }
                         }
                     }
@@ -101,7 +126,7 @@ class ReleasePlugin implements Plugin<Project> {
 
                 }
             }
-            if (!extension.version.endsWith("SNAPSHOT")) {
+            if (isRelease) {
                 project.signing {
                     sign project.publishing.publications
                 }
