@@ -40,8 +40,7 @@ class ReleasePlugin implements Plugin<Project> {
             project.task('androidJavadocs', type: Javadoc) {
                 source = project.android.sourceSets.main.java.srcDirs
                 failOnError = false
-                classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
-
+                //classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
                 if (JavaVersion.current().isJava8Compatible()) {
                     project.allprojects {
                         project.tasks.withType(Javadoc) {
@@ -50,8 +49,8 @@ class ReleasePlugin implements Plugin<Project> {
                     }
                 }
             }
-            project.task('javadocJar', type: Jar, dependsOn: project.tasks.androidJavadocs) {
-                from project.tasks.androidJavadocs.destinationDir
+            project.task('javadocJar', type: Jar) {
+                from project.tasks.androidJavadocs
                 archiveClassifier = 'javadoc'
             }
         }
