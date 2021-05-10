@@ -48,7 +48,7 @@ class PublishExtension {
             extensionError += "Missing username. "
         }
         if (password == null) {
-            password += "Missing userOrg. "
+            password += "Missing password. "
         }
         if (extensionError) {
             String prefix = "Have you created the publish closure? "
@@ -60,34 +60,66 @@ class PublishExtension {
         Properties properties = new Properties()
         InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream();
         properties.load(inputStream)
-        def user = properties.getProperty('maven.username')
-        def key = properties.getProperty('maven.password')
-        def keyId = properties.getProperty('signing.keyId')
-        def sPassword = properties.getProperty('signing.password')
-        def file = properties.getProperty('signing.file')
-        if (keyId == null || keyId.empty) {
-            keyId = '2A4D54DC'
+        def appUser = properties.getProperty('maven.username')
+        def appKey = properties.getProperty('maven.password')
+        def appKeyId = properties.getProperty('signing.keyId')
+        def appPassword = properties.getProperty('signing.password')
+        def appFile = properties.getProperty('signing.file')
+
+
+
+        File pcPropertiesFile = new File('C:\\Users\\local.properties')
+        if (pcPropertiesFile.exists()) {
+            Properties pcProperties = new Properties()
+            InputStream pcInputStream = pcPropertiesFile.newDataInputStream();
+            pcProperties.load(pcInputStream)
+            def pcUser = pcProperties.getProperty('maven.username')
+            def pcKey = pcProperties.getProperty('maven.password')
+            def pcKeyId = pcProperties.getProperty('signing.keyId')
+            def pcPassword = pcProperties.getProperty('signing.password')
+            def pcFile = pcProperties.getProperty('signing.file')
+
+            if (appUser == null || appUser.empty) {
+                appUser = pcUser
+            }
+            if (appKey == null || appKey.empty) {
+                appKey = pcKey
+            }
+            if (appKeyId == null || appKeyId.empty) {
+                appKeyId = pcKeyId
+            }
+            if (appPassword == null || appPassword.empty) {
+                appPassword = pcPassword
+            }
+            if (appFile == null || appFile.empty) {
+                appFile = pcFile
+            }
         }
-        if (file == null || file.empty) {
-            file = 'C:\\Users\\signing.gpg'
+
+
+        if (appKeyId == null || appKeyId.empty) {
+            appKeyId = '2A4D54DC'
+        }
+        if (appFile == null || appFile.empty) {
+            appFile = 'C:\\Users\\signing.gpg'
         }
         if (signingKeyId == null || signingKeyId.empty) {
-            signingKeyId = keyId
+            signingKeyId = appKeyId
         }
         if (signingSecretKeyRingFile == null || signingSecretKeyRingFile.empty) {
-            signingSecretKeyRingFile = file
+            signingSecretKeyRingFile = appFile
         }
         if (signingPassword == null || signingPassword.empty) {
-            signingPassword = sPassword
+            signingPassword = appPassword
         }
-        if (user == null || user.empty) {
-            user = 'ooftf'
+        if (appUser == null || appUser.empty) {
+            appUser = 'ooftf'
         }
         if (username == null || username.empty) {
-            username = user
+            username = appUser
         }
         if (password == null || password.empty) {
-            password = key
+            password = appKey
         }
         if (groupId == null || groupId.empty) {
             groupId = "com.github.ooftf"

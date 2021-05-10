@@ -5,7 +5,7 @@
 ## 使用
 project.gradle
 ```groovy
- classpath "com.github.ooftf:ooftf-maven:1.0.3"
+ classpath "com.github.ooftf:ooftf-maven:1.0.5"
 ```
 library.gradle
 ```groovy
@@ -41,6 +41,7 @@ library.gradle
 * signing.keyId
 * signing.password
 * signing.file
+## 可以添加 C:\Users\local.properties 文件作为全局配置
 ## be careful
 * publish 配置优先于 local.properties
 * 如果 version 是以 SNAPSHOT 结尾上传到 snapshot仓库，否则上传到release仓库
